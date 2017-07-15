@@ -19,13 +19,12 @@ test_y_data = y_data[0 .. (test_set_size-1)]
 training_x_data = x_data[test_set_size .. x_data.size]
 training_y_data = y_data[test_set_size .. y_data.size]
 
-problem = Libsvm::Problem.new
+# Setup SVM parameters
 parameter = Libsvm::SvmParameter.new
-
 parameter.cache_size = 1 # in megabytes
 parameter.eps = 0.001
-parameter.c = 10
-parameter.gamma = 0.005
+parameter.c = 1
+parameter.gamma = 0.01
 parameter.kernel_type = Libsvm::KernelType::RBF
 
 # Convert into proper feature arrays for Libsvm
@@ -33,6 +32,7 @@ test_x_data = test_x_data.map {|feature_row| Libsvm::Node.features(feature_row) 
 training_x_data = training_x_data.map {|feature_row| Libsvm::Node.features(feature_row) }
 
 # Define our problem using the training dat
+problem = Libsvm::Problem.new
 problem.set_examples(training_y_data, training_x_data)
 
 # Train our model
@@ -47,7 +47,6 @@ predicted = []
 test_x_data.each do |params|
   predicted.push( model.predict(params) )
 end
-
 correct = predicted.collect.with_index { |e,i| (e == test_y_data[i]) ? 1 : 0 }.inject{ |sum,e| sum+e }
 
 puts "Classification Accuracy: #{((correct.to_f / test_set_size) * 100).round(2)}% - test set of size #{test_size_percentange}%"
